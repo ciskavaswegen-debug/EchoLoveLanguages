@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Echo Love Language Questionnaire</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(160deg,#F0F2FF 0%,#FAF8FF 60%,#F5FFF8 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px;
+    color: #1A1C2E;
+  }
+
+  #root { width: 100%; max-width: 580px; }
+
+  .header { text-align: center; margin-bottom: 32px; }
+  .header-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #8A8FA8; text-transform: uppercase; margin-bottom: 6px; }
+  .header-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3; }
+
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 4px 32px rgba(92,122,234,0.10), 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .footer-text { text-align: center; font-size: 12px; color: #B0B4CC; margin-top: 20px; }
+
+  .fade-in { animation: fadeIn 0.35s ease; }
+
+  /* Progress bar */
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: #8A8FA8; margin-bottom: 6px; }
+  .progress-track { background: #E8EAF2; border-radius: 4px; height: 4px; margin-bottom: 28px; }
+  .progress-fill { height: 4px; border-radius: 4px; background: linear-gradient(90deg,#5C7AEA,#A466D0); transition: width 0.3s ease; }
+
+  /* Question text */
+  .q-text { font-size: 18px; line-height: 1.65; font-family: Georgia, serif; color: #1A1C2E; margin-bottom: 28px; }
+  .q-label { font-size: 12px; color: #8A8FA8; letter-spacing: 0.03em; margin-bottom: 14px; }
+
+  /* Scale buttons */
+  .scale-list { display: flex; flex-direction: column; gap: 10px; }
+  .scale-btn {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; border-radius: 10px; cursor: pointer;
+    border: 2px solid #E8EAF2; background: #FAFBFF;
+    transition: border-color 0.15s, background 0.15s;
+    text-align: left; font-family: inherit; font-size: 14px; color: #4A4E6B; width: 100%;
+  }
+  .scale-btn.selected { border-color: #5C7AEA; background: rgba(92,122,234,0.07); color: #1A1C2E; font-weight: 600; }
+  .radio-dot {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid #C8CCDF; background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .scale-btn.selected .radio-dot { border-color: #5C7AEA; background: #5C7AEA; }
+  .radio-inner { width: 8px; height: 8px; border-radius: 50%; background: #fff; display: none; }
+  .scale-btn.selected .radio-inner { display: block; }
+  .scale-num { font-weight: 700; margin-right: 6px; color: #8A8FA8; }
+  .scale-btn.selected .scale-num { color: #5C7AEA; }
+
+  /* Back link */
+  .back-link { margin-top: 20px; font-size: 13px; color: #8A8FA8; background: none; border: none; cursor: pointer; text-decoration: underline; font-family: inherit; }
+
+  /* Intro */
+  .intro-heading { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 20px; }
+  .intro-p { font-size: 14px; color: #4A4E6B; line-height: 1.75; text-align: center; margin-bottom: 14px; }
+  .dots { display: flex; justify-content: center; gap: 10px; margin-bottom: 32px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .divider { height: 1px; background: #E8EAF2; margin-bottom: 28px; }
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8A8FA8; text-transform: uppercase; margin-bottom: 18px; }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .field { margin-bottom: 14px; }
+  label { font-size: 13px; color: #4A4E6B; font-weight: 600; display: block; margin-bottom: 6px; }
+  .req { color: #D95E6B; }
+  .opt { font-size: 12px; color: #8A8FA8; font-weight: 400; }
+  input[type=text], input[type=email], input[type=tel] {
+    width: 100%; padding: 11px 14px; border-radius: 8px; font-size: 14px;
+    border: 1.5px solid #D8DCF0; outline: none; color: #1A1C2E;
+    background: #FAFBFF; font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: #5C7AEA; }
+
+  /* Buttons */
+  .btn-primary {
+    display: block; width: 100%; padding: 15px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg,#5C7AEA,#A466D0);
+    color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(92,122,234,0.35);
+    font-family: inherit; text-decoration: none; text-align: center;
+  }
+  .btn-primary-sm {
+    display: block; width: 100%; padding: 14px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg,#5C7AEA,#A466D0);
+    color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(92,122,234,0.25);
+    font-family: inherit; text-decoration: none; text-align: center;
+    margin-bottom: 12px;
+  }
+  .btn-secondary {
+    display: block; width: 100%; padding: 13px; border-radius: 10px;
+    border: 2px solid #E8EAF2; background: #FAFBFF;
+    font-size: 14px; font-weight: 600; color: #4A4E6B; cursor: pointer; font-family: inherit;
+  }
+
+  /* Error box */
+  .error-box { background: #FFF0F0; border: 1px solid #F08080; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; color: #C00; }
+
+  /* Rank section */
+  .rank-section { margin-bottom: 40px; }
+  .rank-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .rank-subtitle { font-size: 13px; color: #6B6F8A; line-height: 1.55; margin-bottom: 20px; }
+  .rank-items { display: flex; flex-direction: column; gap: 12px; }
+  .rank-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 14px 16px; border-radius: 10px;
+    border: 2px solid #E8EAF2; background: #FAFBFF;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .rank-item.chosen { border-color: #5C7AEA; background: rgba(92,122,234,0.03); }
+  .rank-item select {
+    padding: 6px 8px; border-radius: 6px; font-size: 14px; font-weight: 600;
+    border: 2px solid #C8CCDF; background: #fff; color: #8A8FA8;
+    cursor: pointer; min-width: 58px; font-family: inherit;
+  }
+  .rank-item.chosen select { border-color: #5C7AEA; background: rgba(92,122,234,0.1); color: #5C7AEA; }
+  .rank-item p { font-size: 13px; color: #4A4E6B; line-height: 1.55; margin: 0; }
+  .rank-progress { display: flex; gap: 8px; margin-top: 16px; }
+  .rank-prog-box { flex: 1; background: #F4F5FF; border-radius: 6px; padding: 8px 10px; }
+  .rank-prog-label { font-size: 11px; color: #8A8FA8; font-weight: 700; margin-bottom: 2px; }
+  .rank-prog-val { font-size: 12px; font-weight: 700; }
+
+  /* Results */
+  .result-primary-box {
+    background: linear-gradient(135deg,rgba(92,122,234,0.08),rgba(164,102,208,0.08));
+    border: 1px solid rgba(164,102,208,0.25); border-radius: 14px;
+    padding: 24px 24px 20px; margin-bottom: 32px;
+  }
+  .result-primary-eyebrow { font-size: 12px; font-weight: 700; color: #8A8FA8; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .primary-tags { display: flex; gap: 12px; flex-wrap: wrap; }
+  .primary-tag { border-radius: 10px; padding: 10px 18px; display: flex; align-items: center; gap: 8px; }
+  .primary-tag-label { font-size: 11px; color: rgba(255,255,255,0.8); font-weight: 700; }
+  .primary-tag-name { color: #fff; font-weight: 700; font-size: 15px; }
+  .result-section-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+  .score-bar { margin-bottom: 14px; }
+  .score-bar-meta { display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center; }
+  .score-bar-lang { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+  .score-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .score-val { font-size: 13px; font-weight: 700; }
+  .score-track { background: #E8EAF2; border-radius: 4px; height: 8px; }
+  .score-fill { height: 8px; border-radius: 4px; transition: width 0.8s ease; }
+  .rank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .rank-col-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+  .rank-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .rank-badge {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+    background: #E8EAF2; color: #8A8FA8;
+  }
+  .rank-badge.top { color: #fff; }
+  .rank-name { font-size: 13px; color: #8A8FA8; }
+  .rank-name.top { color: #1A1C2E; font-weight: 600; }
+  .coaching-note {
+    background: #FFF8E7; border: 1px solid #F0C840; border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 24px; font-size: 13px; color: #6B5C00; line-height: 1.55;
+  }
+
+  /* Submit */
+  .submit-heading { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .submit-desc { font-size: 14px; color: #4A4E6B; line-height: 1.7; margin-bottom: 24px; }
+  .fallback-note { font-size: 12px; color: #6B6F8A; line-height: 1.65; margin-bottom: 28px; }
+  .fallback-note a { color: #5C7AEA; }
+  .submit-sub-heading { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+  .submit-sub-desc { font-size: 13px; color: #6B6F8A; line-height: 1.6; margin-bottom: 16px; }
+
+  @media (max-width: 480px) {
+    .field-grid { grid-template-columns: 1fr; }
+    .rank-grid { grid-template-columns: 1fr; }
+    .card { padding: 24px 18px; }
+  }
+</style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <p class="header-eyebrow">Echo Assessment</p>
+    <h1 class="header-title">Love Language Questionnaire</h1>
+  </div>
+  <div class="card" id="card"></div>
+  <p class="footer-text">Echo Assessments Love Languages Framework · Based on Chapman's Five Love Languages</p>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const LANGUAGES = ["Verbal Affirmation","Devoted Presence","Practical Care","Symbolic Expression","Physical Connection","Secure Belonging"];
+
+const LANGUAGE_COLOR = {
+  "Verbal Affirmation":"#5C7AEA","Devoted Presence":"#4EADA4","Practical Care":"#E08C4A",
+  "Symbolic Expression":"#A466D0","Physical Connection":"#D95E6B","Secure Belonging":"#4BAD72"
+};
+
+const RAW_QUESTIONS = [
+  {id:1,lang:"Verbal Affirmation",text:"When someone tells me specifically what I did well — not just 'good job' but exactly why it mattered — I carry that with me for a long time."},
+  {id:2,lang:"Verbal Affirmation",text:"Being told I am seen, valued, or believed in lands differently than almost anything else someone can do for me."},
+  {id:3,lang:"Verbal Affirmation",text:"I notice when the people close to me speak well of me to others, and it matters more than they probably realise."},
+  {id:4,lang:"Verbal Affirmation",text:"Hearing 'I'm proud of you' or 'I believe in you' from someone I respect changes something in how I feel about myself."},
+  {id:5,lang:"Verbal Affirmation",text:"When I go a long time without being genuinely affirmed by the people around me, I start to question whether I'm valued at all."},
+  {id:6,lang:"Verbal Affirmation",text:"I find myself returning to encouraging words someone said to me, sometimes long after the moment has passed."},
+  {id:7,lang:"Devoted Presence",text:"When someone puts everything else aside and gives me their full attention, I feel genuinely loved in a way other gestures don't quite reach."},
+  {id:8,lang:"Devoted Presence",text:"I feel close to someone not through what they do for me, but through the quality of time we spend together."},
+  {id:9,lang:"Devoted Presence",text:"Being interrupted, half-listened to, or having to compete with a phone leaves me feeling less important than I'd like to admit."},
+  {id:10,lang:"Devoted Presence",text:"Knowing someone chose to spend time with me — when they had other options — means more than the activity itself."},
+  {id:11,lang:"Devoted Presence",text:"What I need most from the people I love is their full presence — not their to-do list, not their phone, just them."},
+  {id:12,lang:"Devoted Presence",text:"A long, unhurried conversation where I feel genuinely heard stays with me more than most other expressions of care."},
+  {id:13,lang:"Practical Care",text:"When someone notices I'm overwhelmed and steps in without being asked, I feel more cared for than by almost anything else."},
+  {id:14,lang:"Practical Care",text:"Actions that make my life lighter — even small ones — communicate love more clearly to me than words."},
+  {id:15,lang:"Practical Care",text:"I feel most connected to people who follow through: who say they'll help and actually do."},
+  {id:16,lang:"Practical Care",text:"When someone handles a practical burden on my behalf — whether I asked or not — I feel genuinely looked after."},
+  {id:17,lang:"Practical Care",text:"Seeing someone anticipate what I need — before I know it myself — makes me feel understood in a very specific way."},
+  {id:18,lang:"Practical Care",text:"The most meaningful thing someone can do is help me carry what I'm carrying — not fix it, just share the weight."},
+  {id:19,lang:"Symbolic Expression",text:"When someone gives me something that shows they were truly paying attention — not expensive, just right — I feel deeply known."},
+  {id:20,lang:"Symbolic Expression",text:"I notice when moments that matter to me go unmarked, and it leaves a small but real gap."},
+  {id:21,lang:"Symbolic Expression",text:"A token, gesture, or ritual that carries meaning matters far more to me than its material worth."},
+  {id:22,lang:"Symbolic Expression",text:"When someone marks a milestone or transition in my life — even quietly — I feel like I matter in a specific way."},
+  {id:23,lang:"Symbolic Expression",text:"I hold onto objects, messages, or small symbols of care from people I love because they carry real meaning for me."},
+  {id:24,lang:"Symbolic Expression",text:"The thought and attention behind a gesture tells me more about how someone feels about me than the gesture itself."},
+  {id:25,lang:"Physical Connection",text:"A hug, a hand on my shoulder, or a simple touch communicates something words often can't."},
+  {id:26,lang:"Physical Connection",text:"I feel most connected to people I'm close to when we share physical space — sitting near each other, touching, or simply being in the same room."},
+  {id:27,lang:"Physical Connection",text:"Physical closeness — even just proximity — makes me feel more settled and more known."},
+  {id:28,lang:"Physical Connection",text:"When someone I care about reaches for me physically — a hug, a touch, a reassuring hand — something in me settles."},
+  {id:29,lang:"Physical Connection",text:"Going a long time without physical warmth from the people I love leaves me feeling disconnected, even if everything else is fine."},
+  {id:30,lang:"Physical Connection",text:"Being held, comforted physically, or simply touched with care meets a need that words and actions rarely reach."},
+  {id:31,lang:"Secure Belonging",text:"What I need most isn't grand gestures — it's knowing I don't have to earn my place, that I simply belong."},
+  {id:32,lang:"Secure Belonging",text:"I feel most loved when relationships feel stable and unconditional — when I'm not anxious about where I stand."},
+  {id:33,lang:"Secure Belonging",text:"Being chosen consistently — not just once, but through steady, reliable behaviour over time — matters deeply to me."},
+  {id:34,lang:"Secure Belonging",text:"I feel most secure with people who show up for me in the ordinary, unremarkable moments — not just the dramatic ones."},
+  {id:35,lang:"Secure Belonging",text:"What I value most is being included without having to ask — being considered as a matter of course."},
+  {id:36,lang:"Secure Belonging",text:"I feel cared for most deeply when someone makes it clear — through consistent action — that I am a permanent part of their life."}
+];
+
+// Fixed interleaved order — no two consecutive questions from same language
+const INTERLEAVE_ORDER = ["Verbal Affirmation","Practical Care","Devoted Presence","Secure Belonging","Symbolic Expression","Physical Connection","Verbal Affirmation","Devoted Presence","Practical Care","Physical Connection","Symbolic Expression","Secure Belonging","Practical Care","Verbal Affirmation","Secure Belonging","Devoted Presence","Physical Connection","Symbolic Expression","Devoted Presence","Symbolic Expression","Verbal Affirmation","Practical Care","Secure Belonging","Physical Connection","Symbolic Expression","Secure Belonging","Physical Connection","Verbal Affirmation","Devoted Presence","Practical Care","Secure Belonging","Physical Connection","Verbal Affirmation","Symbolic Expression","Practical Care","Devoted Presence"];
+
+function buildQuestions() {
+  const groups = {};
+  LANGUAGES.forEach(l => groups[l] = RAW_QUESTIONS.filter(q => q.lang === l).slice());
+  return INTERLEAVE_ORDER.map(lang => groups[lang].shift()).filter(Boolean);
+}
+const QUESTIONS = buildQuestions();
+
+const PERSONAL_RANK = [
+  {lang:"Verbal Affirmation",text:"Someone names specifically and sincerely what they love about me — not a compliment, but the real reason I matter to them."},
+  {lang:"Devoted Presence",text:"Someone gives me their full, undivided attention — no agenda, no distractions — just choosing to be fully with me."},
+  {lang:"Practical Care",text:"Someone notices what I'm carrying and acts to lighten it, without me having to ask or explain."},
+  {lang:"Symbolic Expression",text:"Someone marks a significant moment — a milestone, an effort, a transition — with something that shows they were truly paying attention."},
+  {lang:"Physical Connection",text:"Someone reaches for me physically — a touch, a hold, a gesture of closeness — that communicates care beyond words."},
+  {lang:"Secure Belonging",text:"Someone makes it clear, through consistent behaviour over time, that my place in their life is unconditional — I don't have to re-earn it."}
+];
+
+const PROFESSIONAL_RANK = [
+  {lang:"Verbal Affirmation",text:"Someone names, specifically and sincerely, the value I bring — not just that I did well, but why it mattered."},
+  {lang:"Devoted Presence",text:"Someone gives me their full, undivided attention — no agenda, no distractions — when it counts."},
+  {lang:"Practical Care",text:"Someone notices what I'm carrying and acts to lighten it, without me having to ask or explain."},
+  {lang:"Symbolic Expression",text:"Someone marks a significant moment — a milestone, an effort, a transition — with something that shows they were paying attention."},
+  {lang:"Physical Connection",text:"Someone makes a point of including me — physically in the room, at the table, in the conversation — rather than leaving me on the periphery."},
+  {lang:"Secure Belonging",text:"Someone makes it clear, through consistent behaviour, that my place here is secure — I don't have to re-earn it."}
+];
+
+const SCALE = [
+  {value:1,label:"Doesn't resonate"},
+  {value:2,label:"Slightly"},
+  {value:3,label:"Moderately"},
+  {value:4,label:"Strongly"},
+  {value:5,label:"Deeply — this is me"}
+];
+
+function ordinal(n) { return n===1?"1st":n===2?"2nd":n===3?"3rd":n+"th"; }
+
+// ── State ─────────────────────────────────────────────────────────────────────
+
+let state = {
+  phase: "intro",       // intro | likert | rank | submit | results
+  qIndex: 0,
+  responses: {},        // { [questionId]: score }
+  personalRanks: {},    // { [lang]: rank }
+  professionalRanks: {},
+  details: { firstName:"", surname:"", email:"", phone:"" },
+  detailsError: "",
+  rankError: ""
+};
+
+// ── Render ────────────────────────────────────────────────────────────────────
+
+function render() {
+  const card = document.getElementById("card");
+  const p = state.phase;
+  if (p === "intro")   card.innerHTML = renderIntro();
+  if (p === "likert")  card.innerHTML = renderLikert();
+  if (p === "rank")    card.innerHTML = renderRank();
+  if (p === "submit")  card.innerHTML = renderSubmit();
+  if (p === "results") card.innerHTML = renderResults();
+  card.classList.remove("fade-in");
+  void card.offsetWidth;
+  card.classList.add("fade-in");
+  bindEvents();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── Intro ─────────────────────────────────────────────────────────────────────
+
+function renderIntro() {
+  const dots = LANGUAGES.map(l => `<div class="dot" style="background:${LANGUAGE_COLOR[l]}" title="${l}"></div>`).join("");
+  return `
+    <h2 class="intro-heading">Understand how you give and receive care</h2>
+    <p class="intro-p">You're about to discover something that most people spend years trying to name.</p>
+    <p class="intro-p">The Echo Love Language Questionnaire reveals how you most deeply give and receive care — and with it, a language for the way you connect, relate, and thrive.</p>
+    <p class="intro-p">There are no right or wrong answers. Just honest ones.</p>
+    <p class="intro-p" style="margin-bottom:28px">Set aside 10–15 minutes, find a quiet moment, and rate each statement on how deeply it resonates with you.</p>
+    <div class="dots">${dots}</div>
+    <div class="divider"></div>
+    <p class="section-label">Your Details</p>
+    <div class="field-grid">
+      <div>
+        <label>First name <span class="req">*</span></label>
+        <input type="text" id="firstName" placeholder="e.g. Sarah" value="${esc(state.details.firstName)}"/>
+      </div>
+      <div>
+        <label>Surname <span class="req">*</span></label>
+        <input type="text" id="surname" placeholder="e.g. Johnson" value="${esc(state.details.surname)}"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Email address <span class="req">*</span></label>
+      <input type="email" id="email" placeholder="e.g. sarah@example.com" value="${esc(state.details.email)}"/>
+    </div>
+    <div class="field" style="margin-bottom:28px">
+      <label>Contact number <span class="opt">(optional, include country code)</span></label>
+      <input type="tel" id="phone" placeholder="e.g. +27 82 123 4567" value="${esc(state.details.phone)}"/>
+    </div>
+    ${state.detailsError ? `<div class="error-box">${esc(state.detailsError)}</div>` : ""}
+    <button class="btn-primary" id="btnStart">Begin Questionnaire →</button>
+  `;
+}
+
+// ── Likert ────────────────────────────────────────────────────────────────────
+
+function renderLikert() {
+  const q = QUESTIONS[state.qIndex];
+  const current = state.qIndex + 1;
+  const total = QUESTIONS.length;
+  const pct = Math.round((current / total) * 100);
+  const chosen = state.responses[q.id];
+
+  const buttons = SCALE.map(s => `
+    <button class="scale-btn${chosen === s.value ? " selected" : ""}" data-val="${s.value}">
+      <div class="radio-dot"><div class="radio-inner"></div></div>
+      <span><span class="scale-num">${s.value}</span>${esc(s.label)}</span>
+    </button>
+  `).join("");
+
+  return `
+    <div class="progress-meta"><span>Question ${current} of ${total}</span><span>${pct}% complete</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <p class="q-text">"${esc(q.text)}"</p>
+    <p class="q-label">HOW STRONGLY DOES THIS RESONATE WITH YOU?</p>
+    <div class="scale-list">${buttons}</div>
+    ${state.qIndex > 0 ? `<button class="back-link" id="btnBack">← Previous question</button>` : ""}
+  `;
+}
+
+// ── Rank ──────────────────────────────────────────────────────────────────────
+
+function renderRankSection(title, subtitle, items, ranks, prefix) {
+  const itemsHtml = items.map(item => {
+    const chosen = ranks[item.lang];
+    const opts = [1,2,3,4,5,6].map(n => {
+      const usedByOther = Object.entries(ranks).some(([l,r]) => r === n && l !== item.lang);
+      return `<option value="${n}"${chosen===n?" selected":""}${usedByOther?" disabled":""}>${ordinal(n)}</option>`;
+    }).join("");
+    return `
+      <div class="rank-item${chosen ? " chosen" : ""}" data-lang="${esc(item.lang)}" data-prefix="${prefix}">
+        <select data-lang="${esc(item.lang)}" data-prefix="${prefix}">
+          <option value="">—</option>${opts}
+        </select>
+        <p>${esc(item.text)}</p>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="rank-section">
+      <h3 class="rank-title">${title}</h3>
+      <p class="rank-subtitle">${subtitle}</p>
+      <div class="rank-items">${itemsHtml}</div>
+    </div>
+  `;
+}
+
+function renderRank() {
+  const pCount = Object.keys(state.personalRanks).length;
+  const wCount = Object.keys(state.professionalRanks).length;
+  return `
+    <h2 style="font-size:19px;font-weight:700;margin-bottom:8px">Forced-Choice Ranking</h2>
+    <p style="font-size:13px;color:#6B6F8A;margin-bottom:28px;line-height:1.55">
+      Please rank each description from <strong>1st (most essential)</strong> to <strong>6th (still valued, but least essential)</strong> — on your list. Each rank can only be used once per section.
+    </p>
+    ${renderRankSection(
+      "Personal Relationships",
+      "Think about your closest personal relationships — your romantic partner, close friends or family. Rank how much each of the below statements make you feel valued in those relationships.",
+      PERSONAL_RANK, state.personalRanks, "p"
+    )}
+    ${renderRankSection(
+      "Professional Relationships",
+      "Think about your workplace relationships — colleagues, managers, direct reports and/or clients. Rank how much each of the below statements make you feel valued in that context.",
+      PROFESSIONAL_RANK, state.professionalRanks, "w"
+    )}
+    ${state.rankError ? `<div class="error-box">${esc(state.rankError)}</div>` : ""}
+    <button class="btn-primary" id="btnSubmitRanks">View My Results →</button>
+    <div class="rank-progress">
+      <div class="rank-prog-box">
+        <div class="rank-prog-label">PERSONAL</div>
+        <div class="rank-prog-val" style="color:#5C7AEA">${pCount}/6 ranked</div>
+      </div>
+      <div class="rank-prog-box">
+        <div class="rank-prog-label">PROFESSIONAL</div>
+        <div class="rank-prog-val" style="color:#A466D0">${wCount}/6 ranked</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+
+function buildMailto() {
+  const scores = scoreByLanguage();
+  const sorted = [...LANGUAGES].sort((a,b) => scores[b]-scores[a]);
+  const pSorted = Object.entries(state.personalRanks).sort((a,b) => a[1]-b[1]);
+  const wSorted = Object.entries(state.professionalRanks).sort((a,b) => a[1]-b[1]);
+  const name = (state.details.firstName + " " + state.details.surname).trim();
+  const to = "echoassessments@gmail.com";
+  const subject = `ECHO Love Language Results — ${name}`;
+  const body = [
+    `Name: ${name}`,
+    `Email: ${state.details.email}`,
+    state.details.phone ? `Contact: ${state.details.phone}` : null,
+    "",
+    "--- RESONANCE PROFILE (out of 30) ---",
+    ...sorted.map(l => `  ${l}: ${scores[l]}/30`),
+    "",
+    "--- PERSONAL FORCED-CHOICE RANKING ---",
+    ...pSorted.map(([l,r]) => `  ${r}. ${l}`),
+    "",
+    "--- PROFESSIONAL FORCED-CHOICE RANKING ---",
+    ...wSorted.map(([l,r]) => `  ${r}. ${l}`),
+    "",
+    "I have completed the Echo Love Language Questionnaire."
+  ].filter(l => l !== null).join("\n");
+  return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function renderSubmit() {
+  const mailto = buildMailto();
+  return `
+    <h3 class="submit-heading">One last step</h3>
+    <p class="submit-desc">Before viewing your results, please submit them via email so we have a record on file.</p>
+    <a href="${mailto}" class="btn-primary-sm">Submit Results via Email</a>
+    <p class="fallback-note">
+      If the button above doesn't open your email app, copy and send the following to
+      <a href="mailto:echoassessments@gmail.com">echoassessments@gmail.com</a>:
+      your name, email, and the message "I have completed the Echo Love Language Questionnaire." We will match your submission to your results on file.
+    </p>
+    <div class="divider"></div>
+    <h4 class="submit-sub-heading">Submit your results to our team</h4>
+    <p class="submit-sub-desc">Send a copy of your results for our records.</p>
+    <a href="${mailto}" class="btn-primary-sm">Submit Results via Email</a>
+    <p class="fallback-note">
+      If the button above doesn't open your email app, email us directly at
+      <a href="mailto:echoassessments@gmail.com">echoassessments@gmail.com</a>
+      with your name and the message "I have completed the Echo Love Language Questionnaire."
+    </p>
+    <button class="btn-secondary" id="btnProceed">Proceed to Results Summary →</button>
+  `;
+}
+
+// ── Results ───────────────────────────────────────────────────────────────────
+
+function scoreByLanguage() {
+  const scores = {};
+  LANGUAGES.forEach(l => scores[l] = 0);
+  QUESTIONS.forEach(q => { if (state.responses[q.id]) scores[q.lang] += state.responses[q.id]; });
+  return scores;
+}
+
+function renderResults() {
+  const scores = scoreByLanguage();
+  const sorted = [...LANGUAGES].sort((a,b) => scores[b]-scores[a]);
+  const top2 = sorted.slice(0,2);
+  const pSorted = Object.entries(state.personalRanks).sort((a,b) => a[1]-b[1]);
+  const wSorted = Object.entries(state.professionalRanks).sort((a,b) => a[1]-b[1]);
+
+  const primaryTags = top2.map((lang,i) => `
+    <div class="primary-tag" style="background:${LANGUAGE_COLOR[lang]}">
+      <span class="primary-tag-label">${i===0?"PRIMARY":"SECONDARY"}</span>
+      <span class="primary-tag-name">${esc(lang)}</span>
+    </div>
+  `).join("");
+
+  const scoreBars = sorted.map(lang => {
+    const pct = (scores[lang]/30*100).toFixed(1);
+    return `
+      <div class="score-bar">
+        <div class="score-bar-meta">
+          <div class="score-bar-lang">
+            <span class="score-dot" style="background:${LANGUAGE_COLOR[lang]}"></span>
+            ${esc(lang)}
+          </div>
+          <span class="score-val" style="color:${LANGUAGE_COLOR[lang]}">${scores[lang]}/30</span>
+        </div>
+        <div class="score-track">
+          <div class="score-fill" style="width:${pct}%;background:${LANGUAGE_COLOR[lang]}"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const rankRows = (arr) => arr.map(([lang,rank]) => `
+    <div class="rank-row">
+      <div class="rank-badge${rank<=2?" top":""}" style="${rank<=2?`background:${LANGUAGE_COLOR[lang]}`:""}">
+        ${rank}
+      </div>
+      <span class="rank-name${rank<=2?" top":""}">${esc(lang)}</span>
+    </div>
+  `).join("");
+
+  const coaching = pSorted[0]?.[0] !== wSorted[0]?.[0] ? `
+    <div class="coaching-note">
+      <strong>💡 Coaching note:</strong> Your personal and professional top rankings differ —
+      <strong>${esc(pSorted[0]?.[0])}</strong> leads personally while
+      <strong>${esc(wSorted[0]?.[0])}</strong> leads professionally.
+      This divergence is often where the richest self-awareness lives.
+    </div>
+  ` : "";
+
+  return `
+    <div class="result-primary-box">
+      <p class="result-primary-eyebrow">Your Primary Languages</p>
+      <div class="primary-tags">${primaryTags}</div>
+    </div>
+    <p class="result-section-title">Resonance Profile</p>
+    ${scoreBars}
+    <div style="height:1px;background:#E8EAF2;margin:28px 0"></div>
+    <div class="rank-grid">
+      <div>
+        <p class="rank-col-title">Personal Priority</p>
+        ${rankRows(pSorted)}
+      </div>
+      <div>
+        <p class="rank-col-title">Professional Priority</p>
+        ${rankRows(wSorted)}
+      </div>
+    </div>
+    ${coaching}
+    <button class="btn-secondary" id="btnRetake">Start Over</button>
+  `;
+}
+
+// ── Events ────────────────────────────────────────────────────────────────────
+
+function bindEvents() {
+  // Intro
+  ["firstName","surname","email","phone"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", e => { state.details[id] = e.target.value; });
+  });
+  const btnStart = document.getElementById("btnStart");
+  if (btnStart) btnStart.addEventListener("click", () => {
+    const d = state.details;
+    if (!d.firstName.trim() || !d.surname.trim() || !d.email.trim()) {
+      state.detailsError = "Please complete your first name, surname, and email address before continuing.";
+      return render();
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) {
+      state.detailsError = "Please enter a valid email address.";
+      return render();
+    }
+    state.detailsError = "";
+    state.phase = "likert";
+    render();
+  });
+
+  // Likert
+  document.querySelectorAll(".scale-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const val = parseInt(btn.dataset.val);
+      const q = QUESTIONS[state.qIndex];
+      state.responses[q.id] = val;
+      setTimeout(() => {
+        if (state.qIndex < QUESTIONS.length - 1) { state.qIndex++; }
+        else { state.phase = "rank"; }
+        render();
+      }, 280);
+    });
+  });
+  const btnBack = document.getElementById("btnBack");
+  if (btnBack) btnBack.addEventListener("click", () => { state.qIndex--; render(); });
+
+  // Rank selects
+  document.querySelectorAll(".rank-items select, .rank-item select").forEach(sel => {
+    sel.addEventListener("change", () => {
+      const lang = sel.dataset.lang;
+      const prefix = sel.dataset.prefix;
+      const val = sel.value ? parseInt(sel.value) : null;
+      const ranks = prefix === "p" ? state.personalRanks : state.professionalRanks;
+      if (val === null) {
+        delete ranks[lang];
+      } else {
+        Object.keys(ranks).forEach(k => { if (ranks[k] === val && k !== lang) delete ranks[k]; });
+        ranks[lang] = val;
+      }
+      render();
+    });
+  });
+
+  const btnSubmitRanks = document.getElementById("btnSubmitRanks");
+  if (btnSubmitRanks) btnSubmitRanks.addEventListener("click", () => {
+    const pOk = Object.keys(state.personalRanks).length === 6;
+    const wOk = Object.keys(state.professionalRanks).length === 6;
+    if (!pOk || !wOk) {
+      state.rankError = "Please rank all six items in both sections before continuing.";
+      return render();
+    }
+    state.rankError = "";
+    state.phase = "submit";
+    render();
+  });
+
+  // Submit
+  const btnProceed = document.getElementById("btnProceed");
+  if (btnProceed) btnProceed.addEventListener("click", () => { state.phase = "results"; render(); });
+
+  // Results
+  const btnRetake = document.getElementById("btnRetake");
+  if (btnRetake) btnRetake.addEventListener("click", () => {
+    state = { phase:"intro", qIndex:0, responses:{}, personalRanks:{}, professionalRanks:{}, details:{firstName:"",surname:"",email:"",phone:""}, detailsError:"", rankError:"" };
+    render();
+  });
+}
+
+function esc(str) {
+  return String(str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
