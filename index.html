@@ -405,9 +405,17 @@ function renderLikert() {
     </button>
   `).join("");
 
+  const instructions = state.qIndex === 0 ? `
+    <div style="background:#F5F0E8;border-left:3px solid #C9A84C;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:24px;font-size:13px;color:#3D3D3D;line-height:1.7">
+      <p style="margin:0 0 10px 0">These statements describe different experiences of feeling loved and valued. As you work through the statements, you may find that most of them resonate — because they all describe real and valuable ways of feeling loved. That&#39;s expected, and it&#39;s not a problem. What we&#39;re trying to understand is not what sounds good in theory, but what you genuinely need in practice.</p>
+      <p style="margin:0">The scale runs from <strong>1 — Doesn&#39;t resonate</strong> to <strong>5 — Deeply, this is me.</strong> Try to reserve your 4s and 5s for statements that aren&#39;t just nice to haves — something you&#39;d genuinely feel the loss of if it were missing from your closest relationships.</p>
+    </div>
+  ` : "";
+
   return `
     <div class="progress-meta"><span>Question ${current} of ${total}</span><span>${pct}% complete</span></div>
     <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    ${instructions}
     <p class="q-text">"${esc(q.text)}"</p>
     <p class="q-label">HOW STRONGLY DOES THIS RESONATE WITH YOU?</p>
     <div class="scale-list">${buttons}</div>
