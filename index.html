@@ -53,12 +53,24 @@
     transition: border-color 0.15s, background 0.15s;
     text-align: left; font-family: inherit; font-size: 14px; color: #4A4E6B; width: 100%;
   }
-  .scale-btn.selected { border-color: #5C7AEA; background: rgba(92,122,234,0.07); color: #1A1C2E; font-weight: 600; }
+  .scale-btn.selected {
+    border-color: #5C7AEA;
+    background: rgba(92,122,234,0.12);
+    color: #1A1C2E;
+    font-weight: 600;
+    transform: scale(1.01);
+  }
+  @keyframes selectPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(92,122,234,0.35); }
+    60%  { box-shadow: 0 0 0 6px rgba(92,122,234,0); }
+    100% { box-shadow: 0 0 0 0 rgba(92,122,234,0); }
+  }
+  .scale-btn.selected { animation: selectPulse 0.45s ease; }
   .radio-dot {
     width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
     border: 2px solid #C8CCDF; background: transparent;
     display: flex; align-items: center; justify-content: center;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.18s, background 0.18s;
   }
   .scale-btn.selected .radio-dot { border-color: #5C7AEA; background: #5C7AEA; }
   .radio-inner { width: 8px; height: 8px; border-radius: 50%; background: #fff; display: none; }
@@ -209,6 +221,16 @@ const LANGUAGE_COLOR = {
   "Symbolic Expression":"#A466D0","Physical Connection":"#D95E6B","Secure Belonging":"#4BAD72"
 };
 
+
+const LANGUAGE_DESCRIPTIONS = {
+  "Verbal Affirmation": "You feel most loved through words — specific, sincere, and unprompted. Not generic praise, but someone naming exactly what they see in you. A well-timed word of affirmation can stay with you for years. Silence, or love that's assumed but never spoken, leaves your tank quietly empty.",
+  "Devoted Presence": "You feel most loved through undivided, intentional attention — not just time, but genuine presence. Being someone's choice, not their gap-filler. A long, unhurried conversation or shared experience where the focus is mutual fills your tank more than almost anything else.",
+  "Practical Care": "You feel most loved when someone notices what you're carrying and does something about it — ideally before you have to ask. Reliability is love for you. Small, consistent acts of practical care land more deeply than grand gestures, and broken promises register as more than inconveniences.",
+  "Symbolic Expression": "You feel most loved when someone shows they were thinking of you in the gaps — a gesture, token, or gift that says 'I know you.' The thought and intention matter far more than the value. Being remembered on meaningful occasions, and being given something chosen specifically for you, fills your tank in a way other languages can't quite reach.",
+  "Physical Connection": "You feel most loved through physical closeness, warmth, and touch. This extends beyond romantic affection — a hand on your shoulder, sitting close, a long hug. Physical presence and contact communicate safety and care in a way words often can't. Withdrawal or absence of touch registers as emotional distance, even when nothing is wrong.",
+  "Secure Belonging": "You feel most loved when you know — not just believe, but deeply sense — that your place in someone's life is unconditional. You don't have to earn it, perform for it, or re-prove yourself after conflict. Consistency and steadiness are love. Ambiguity about where you stand is one of the most draining experiences you can have in a relationship."
+};
+
 const RAW_QUESTIONS = [
   {id:1,lang:"Verbal Affirmation",text:"When someone tells me specifically what I did well — not just 'good job' but exactly why it mattered — I carry that with me for a long time."},
   {id:2,lang:"Verbal Affirmation",text:"Being told I am seen, valued, or believed in lands differently than almost anything else someone can do for me."},
@@ -276,6 +298,16 @@ const PROFESSIONAL_RANK = [
   {lang:"Secure Belonging",text:"Someone makes it clear, through consistent behaviour, that my place here is secure — I don't have to re-earn it."}
 ];
 
+
+const GIVING_RANK = [
+  {lang:"Verbal Affirmation", text:"I naturally express care by naming what I appreciate in someone — specifically, sincerely, and often unprompted. Words come easily to me as a vehicle for love."},
+  {lang:"Devoted Presence",   text:"I show love by giving someone my full, undivided attention. When I'm with someone I care about, I'm genuinely there — present, unhurried, focused on them."},
+  {lang:"Practical Care",     text:"I show love by doing — noticing what someone needs and acting on it, often before they ask. I express care through consistent, practical help and follow-through."},
+  {lang:"Symbolic Expression",text:"I show love by finding or creating things that are specifically 'for' the other person — a thoughtful gift, a marked occasion, a small token that says I was thinking of them."},
+  {lang:"Physical Connection",text:"I show love through physical warmth — initiating a hug, sitting close, a hand on the shoulder. Touch and physical presence are my natural language of care and comfort."},
+  {lang:"Secure Belonging",   text:"I show love by showing up consistently and unconditionally — being the person who stays, who doesn't leave when things get hard, who makes others feel they have a permanent place."}
+];
+
 const SCALE = [
   {value:1,label:"Doesn't resonate"},
   {value:2,label:"Slightly"},
@@ -294,6 +326,7 @@ let state = {
   responses: {},        // { [questionId]: score }
   personalRanks: {},    // { [lang]: rank }
   professionalRanks: {},
+  givingRanks: {},
   details: { firstName:"", surname:"", email:"", phone:"" },
   detailsError: "",
   rankError: ""
@@ -301,9 +334,10 @@ let state = {
 
 // ── Render ────────────────────────────────────────────────────────────────────
 
-function render() {
+function render(preserveScroll) {
   const card = document.getElementById("card");
   const p = state.phase;
+  const scrollY = preserveScroll ? window.scrollY : 0;
   if (p === "intro")   card.innerHTML = renderIntro();
   if (p === "likert")  card.innerHTML = renderLikert();
   if (p === "rank")    card.innerHTML = renderRank();
@@ -311,9 +345,13 @@ function render() {
   if (p === "results") card.innerHTML = renderResults();
   card.classList.remove("fade-in");
   void card.offsetWidth;
-  card.classList.add("fade-in");
+  if (!preserveScroll) card.classList.add("fade-in");
   bindEvents();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (preserveScroll) {
+    window.scrollTo({ top: scrollY });
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 // ── Intro ─────────────────────────────────────────────────────────────────────
@@ -409,20 +447,26 @@ function renderRankSection(title, subtitle, items, ranks, prefix) {
 function renderRank() {
   const pCount = Object.keys(state.personalRanks).length;
   const wCount = Object.keys(state.professionalRanks).length;
+  const gCount = Object.keys(state.givingRanks).length;
   return `
     <h2 style="font-size:19px;font-weight:700;margin-bottom:8px">Forced-Choice Ranking</h2>
     <p style="font-size:13px;color:#6B6F8A;margin-bottom:28px;line-height:1.55">
-      Please rank each description from <strong>1st (most essential)</strong> to <strong>6th (still valued, but least essential)</strong> — on your list. Each rank can only be used once per section.
+      Please rank each description from <strong>1st (most essential)</strong> to <strong>6th (still valued, but least essential)</strong>. Each rank can only be used once per section.
     </p>
     ${renderRankSection(
-      "Personal Relationships",
-      "Think about your closest personal relationships — your romantic partner, close friends or family. Rank how much each of the below statements make you feel valued in those relationships.",
+      "Personal Relationships — How I Receive",
+      "Think about your closest personal relationships — your romantic partner, close friends or family. Rank how much each statement describes what makes you feel most loved and valued.",
       PERSONAL_RANK, state.personalRanks, "p"
     )}
     ${renderRankSection(
-      "Professional Relationships",
-      "Think about your workplace relationships — colleagues, managers, direct reports and/or clients. Rank how much each of the below statements make you feel valued in that context.",
+      "Professional Relationships — How I Receive",
+      "Think about your workplace relationships — colleagues, managers, direct reports and/or clients. Rank how much each statement describes what makes you feel most valued at work.",
       PROFESSIONAL_RANK, state.professionalRanks, "w"
+    )}
+    ${renderRankSection(
+      "How I Give Love",
+      "Now shift perspective — think about how you naturally express care to others. Rank each statement from most to least like how you show up for the people you love.",
+      GIVING_RANK, state.givingRanks, "g"
     )}
     ${state.rankError ? `<div class="error-box">${esc(state.rankError)}</div>` : ""}
     <button class="btn-primary" id="btnSubmitRanks">View My Results →</button>
@@ -435,6 +479,10 @@ function renderRank() {
         <div class="rank-prog-label">PROFESSIONAL</div>
         <div class="rank-prog-val" style="color:#A466D0">${wCount}/6 ranked</div>
       </div>
+      <div class="rank-prog-box">
+        <div class="rank-prog-label">GIVING</div>
+        <div class="rank-prog-val" style="color:#4BAD72">${gCount}/6 ranked</div>
+      </div>
     </div>
   `;
 }
@@ -446,6 +494,7 @@ function buildMailto() {
   const sorted = [...LANGUAGES].sort((a,b) => scores[b]-scores[a]);
   const pSorted = Object.entries(state.personalRanks).sort((a,b) => a[1]-b[1]);
   const wSorted = Object.entries(state.professionalRanks).sort((a,b) => a[1]-b[1]);
+  const gSorted = Object.entries(state.givingRanks).sort((a,b) => a[1]-b[1]);
   const name = (state.details.firstName + " " + state.details.surname).trim();
   const to = "echoassessments@gmail.com";
   const subject = `ECHO Love Language Results — ${name}`;
@@ -462,6 +511,9 @@ function buildMailto() {
     "",
     "--- PROFESSIONAL FORCED-CHOICE RANKING ---",
     ...wSorted.map(([l,r]) => `  ${r}. ${l}`),
+    "",
+    "--- HOW I GIVE LOVE (FORCED-CHOICE RANKING) ---",
+    ...Object.entries(state.givingRanks).sort((a,b)=>a[1]-b[1]).map(([l,r]) => `  ${r}. ${l}`),
     "",
     "I have completed the Echo Love Language Questionnaire."
   ].filter(l => l !== null).join("\n");
@@ -507,6 +559,7 @@ function renderResults() {
   const top2 = sorted.slice(0,2);
   const pSorted = Object.entries(state.personalRanks).sort((a,b) => a[1]-b[1]);
   const wSorted = Object.entries(state.professionalRanks).sort((a,b) => a[1]-b[1]);
+  const gSorted = Object.entries(state.givingRanks).sort((a,b) => a[1]-b[1]);
 
   const primaryTags = top2.map((lang,i) => `
     <div class="primary-tag" style="background:${LANGUAGE_COLOR[lang]}">
@@ -551,14 +604,45 @@ function renderResults() {
     </div>
   ` : "";
 
+  // Language description cards for top 2
+  const descCards = top2.map((lang, i) => `
+    <div style="border-radius:12px;border:1.5px solid ${LANGUAGE_COLOR[lang]}22;background:${LANGUAGE_COLOR[lang]}0A;padding:18px 20px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="width:10px;height:10px;border-radius:50%;background:${LANGUAGE_COLOR[lang]};display:inline-block;flex-shrink:0"></span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:${LANGUAGE_COLOR[lang]};text-transform:uppercase">${i===0?"Primary":"Secondary"} Language</span>
+      </div>
+      <p style="font-size:15px;font-weight:700;color:#1A1C2E;margin-bottom:8px">${esc(lang)}</p>
+      <p style="font-size:13px;color:#4A4E6B;line-height:1.65;margin:0">${esc(LANGUAGE_DESCRIPTIONS[lang])}</p>
+    </div>
+  `).join("");
+
+  // Giving vs receiving gap callout
+  const givingTop = gSorted[0]?.[0];
+  const receivingTop = pSorted[0]?.[0];
+  const gapNote = givingTop && receivingTop && givingTop !== receivingTop ? `
+    <div style="background:#F0F4FF;border:1px solid #C0CCEE;border-radius:10px;padding:14px 16px;margin-bottom:24px;font-size:13px;color:#2E3A6B;line-height:1.6">
+      <strong>💡 Giving–Receiving gap:</strong> You give love most naturally through <strong>${esc(givingTop)}</strong>,
+      but feel most loved when you receive <strong>${esc(receivingTop)}</strong>.
+      This is one of the most common sources of relational disconnect — and one of the most valuable things to name.
+    </div>
+  ` : givingTop && receivingTop ? `
+    <div style="background:#F0FFF4;border:1px solid #B0DEC0;border-radius:10px;padding:14px 16px;margin-bottom:24px;font-size:13px;color:#1A4D2E;line-height:1.6">
+      <strong>✓ Aligned:</strong> You give and receive love in the same primary language — <strong>${esc(givingTop)}</strong>. This alignment is a real strength in close relationships.
+    </div>
+  ` : "";
+
   return `
     <div class="result-primary-box">
       <p class="result-primary-eyebrow">Your Primary Languages</p>
       <div class="primary-tags">${primaryTags}</div>
     </div>
+
+    <div style="margin-bottom:28px">${descCards}</div>
+
     <p class="result-section-title">Resonance Profile</p>
     ${scoreBars}
     <div style="height:1px;background:#E8EAF2;margin:28px 0"></div>
+
     <div class="rank-grid">
       <div>
         <p class="rank-col-title">Personal Priority</p>
@@ -569,6 +653,11 @@ function renderResults() {
         ${rankRows(wSorted)}
       </div>
     </div>
+
+    <p class="result-section-title" style="margin-top:4px">How I Give Love</p>
+    <div style="margin-bottom:24px">${rankRows(gSorted)}</div>
+
+    ${gapNote}
     ${coaching}
     <button class="btn-secondary" id="btnRetake">Start Over</button>
   `;
@@ -604,11 +693,23 @@ function bindEvents() {
       const val = parseInt(btn.dataset.val);
       const q = QUESTIONS[state.qIndex];
       state.responses[q.id] = val;
+
+      // Immediately apply selected style to the clicked button — no re-render needed
+      document.querySelectorAll(".scale-btn").forEach(b => {
+        b.classList.remove("selected");
+        b.querySelector(".radio-dot").style.borderColor = "";
+        b.querySelector(".radio-dot").style.background = "";
+        b.querySelector(".radio-inner").style.display = "";
+        b.querySelector(".scale-num").style.color = "";
+      });
+      btn.classList.add("selected");
+
+      // Navigate after a delay long enough for the selection to register visually
       setTimeout(() => {
         if (state.qIndex < QUESTIONS.length - 1) { state.qIndex++; }
         else { state.phase = "rank"; }
         render();
-      }, 280);
+      }, 550);
     });
   });
   const btnBack = document.getElementById("btnBack");
@@ -620,14 +721,14 @@ function bindEvents() {
       const lang = sel.dataset.lang;
       const prefix = sel.dataset.prefix;
       const val = sel.value ? parseInt(sel.value) : null;
-      const ranks = prefix === "p" ? state.personalRanks : state.professionalRanks;
+      const ranks = prefix === "p" ? state.personalRanks : (prefix === "w" ? state.professionalRanks : state.givingRanks);
       if (val === null) {
         delete ranks[lang];
       } else {
         Object.keys(ranks).forEach(k => { if (ranks[k] === val && k !== lang) delete ranks[k]; });
         ranks[lang] = val;
       }
-      render();
+      render(true);
     });
   });
 
@@ -635,9 +736,10 @@ function bindEvents() {
   if (btnSubmitRanks) btnSubmitRanks.addEventListener("click", () => {
     const pOk = Object.keys(state.personalRanks).length === 6;
     const wOk = Object.keys(state.professionalRanks).length === 6;
-    if (!pOk || !wOk) {
-      state.rankError = "Please rank all six items in both sections before continuing.";
-      return render();
+    const gOk = Object.keys(state.givingRanks).length === 6;
+    if (!pOk || !wOk || !gOk) {
+      state.rankError = "Please rank all six items in all three sections before continuing.";
+      return render(true);
     }
     state.rankError = "";
     state.phase = "submit";
@@ -651,7 +753,7 @@ function bindEvents() {
   // Results
   const btnRetake = document.getElementById("btnRetake");
   if (btnRetake) btnRetake.addEventListener("click", () => {
-    state = { phase:"intro", qIndex:0, responses:{}, personalRanks:{}, professionalRanks:{}, details:{firstName:"",surname:"",email:"",phone:""}, detailsError:"", rankError:"" };
+    state = { phase:"intro", qIndex:0, responses:{}, personalRanks:{}, professionalRanks:{}, givingRanks:{}, details:{firstName:"",surname:"",email:"",phone:""}, detailsError:"", rankError:"" };
     render();
   });
 }
