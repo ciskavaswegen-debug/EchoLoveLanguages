@@ -191,8 +191,7 @@
   .submit-desc { font-size: 14px; color: #4A4E6B; line-height: 1.7; margin-bottom: 24px; }
   .fallback-note { font-size: 12px; color: #6B6F8A; line-height: 1.65; margin-bottom: 28px; }
   .fallback-note a { color: #5C7AEA; }
-  .submit-sub-heading { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
-  .submit-sub-desc { font-size: 13px; color: #6B6F8A; line-height: 1.6; margin-bottom: 16px; }
+
 
   @media (max-width: 480px) {
     .field-grid { grid-template-columns: 1fr; }
@@ -522,25 +521,23 @@ function buildMailto() {
 
 function renderSubmit() {
   const mailto = buildMailto();
+  const proceedBtn = state.emailClicked ? `
+    <button class="btn-secondary" id="btnProceed" style="margin-top:4px">Proceed to Results Summary →</button>
+  ` : `
+    <p style="font-size:12px;color:#B0B4CC;text-align:center;margin-top:8px">
+      The button above will unlock your results summary.
+    </p>
+  `;
   return `
     <h3 class="submit-heading">One last step</h3>
     <p class="submit-desc">Before viewing your results, please submit them via email so we have a record on file.</p>
-    <a href="${mailto}" class="btn-primary-sm">Submit Results via Email</a>
-    <p class="fallback-note">
+    <a href="${mailto}" class="btn-primary-sm" id="btnEmail">Submit Results via Email</a>
+    <p class="fallback-note" style="margin-top:10px">
       If the button above doesn't open your email app, copy and send the following to
       <a href="mailto:echoassessments@gmail.com">echoassessments@gmail.com</a>:
       your name, email, and the message "I have completed the Echo Love Language Questionnaire." We will match your submission to your results on file.
     </p>
-    <div class="divider"></div>
-    <h4 class="submit-sub-heading">Submit your results to our team</h4>
-    <p class="submit-sub-desc">Send a copy of your results for our records.</p>
-    <a href="${mailto}" class="btn-primary-sm">Submit Results via Email</a>
-    <p class="fallback-note">
-      If the button above doesn't open your email app, email us directly at
-      <a href="mailto:echoassessments@gmail.com">echoassessments@gmail.com</a>
-      with your name and the message "I have completed the Echo Love Language Questionnaire."
-    </p>
-    <button class="btn-secondary" id="btnProceed">Proceed to Results Summary →</button>
+    ${proceedBtn}
   `;
 }
 
@@ -747,13 +744,19 @@ function bindEvents() {
   });
 
   // Submit
+  const btnEmail = document.getElementById("btnEmail");
+  if (btnEmail) btnEmail.addEventListener("click", () => {
+    // Small delay so the email client opens first, then reveal proceed button
+    setTimeout(() => { state.emailClicked = true; render(); }, 400);
+  });
+
   const btnProceed = document.getElementById("btnProceed");
   if (btnProceed) btnProceed.addEventListener("click", () => { state.phase = "results"; render(); });
 
   // Results
   const btnRetake = document.getElementById("btnRetake");
   if (btnRetake) btnRetake.addEventListener("click", () => {
-    state = { phase:"intro", qIndex:0, responses:{}, personalRanks:{}, professionalRanks:{}, givingRanks:{}, details:{firstName:"",surname:"",email:"",phone:""}, detailsError:"", rankError:"" };
+    state = { phase:"intro", qIndex:0, responses:{}, personalRanks:{}, professionalRanks:{}, givingRanks:{}, details:{firstName:"",surname:"",email:"",phone:""}, detailsError:"", rankError:"", emailClicked:false };
     render();
   });
 }
